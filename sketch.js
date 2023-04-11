@@ -1,4 +1,12 @@
 /* File for all p5.js graphics on screen */
+function removeFromArray(arr, elem) {
+  for (var i = arr.length - 1; i >= 0; i--) {
+    if (arr[i] == elem) {
+      arr.splice(i, 1);
+    }
+  }
+}
+
 const cols = 5;
 const rows = 5;
 var grid = new Array(cols);
@@ -16,11 +24,22 @@ function Spot(i, j) {
   this.f = 0;
   this.g = 0;
   this.h = 0;
+  this.neighbors = [];
 
-  this.show = function () {
-    fill(255);
+  this.show = function (spotColor) {
+    fill(spotColor);
     noStroke();
     rect(this.x * w, this.y * h, w - 1, h - 1);
+  };
+
+  this.addNeighbors = function (grid) {
+    let i = this.i;
+    let j = this.j;
+    // all neighbors of pixel on each side
+    this.neighbors.push(grid[i + 1][j]);
+    this.neighbors.push(grid[i - 1][j]);
+    this.neighbors.push(grid[i][j + 1]);
+    this.neighbors.push(grid[i][j - 1]);
   };
 }
 
@@ -58,6 +77,24 @@ function draw() {
   // normally, this would be a while loop, but draw() itself is a loop
   if (openSet.length > 0) {
     // keep going
+    var winner = 0; // idx of best node to take
+    for (var i = 0; i < openSet.length; i++) {
+      if (openSet[i].f < openSet[winner].f) {
+        winner = i;
+      }
+    }
+
+    // best node to take
+    var current = openSet[winner];
+
+    if (current === end) {
+      console.log("DONE!");
+    }
+
+    // remove current from open set
+    removeFromArray(openSet, current);
+    // add current to closed set
+    closedSet.push(current);
   } else {
     // no solution
   }
@@ -67,7 +104,15 @@ function draw() {
   // debug: draw dots at each grid pixel
   for (var colIdx = 0; colIdx < cols; colIdx++) {
     for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
-      grid[colIdx][rowIdx].show();
+      grid[colIdx][rowIdx].show(color(255));
     }
+  }
+
+  for (var i = 0; i < closedSet.length; i++) {
+    closedSet[i].show(color(255, 0, 0));
+  }
+
+  for (var i = 0; i < openSet.length; i++) {
+    openSet[i].show(color(0, 255, 0));
   }
 }
