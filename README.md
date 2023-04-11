@@ -18,12 +18,13 @@ In Djikstra's algorithm, (explained in very layman's terms) there (usually) are 
 
 In the A-Star algorithm, there is a function f(n) = g(n) + h(n). g is the accumulating 'actual' cost from beginning to end. This is the Djikstra's part of the algorithm. h is the calculation of how long will it take to get to the end from the current point. These two functions combined into f will tell us how long it takes to get to each node.
 
-    - A note about h:
+    A note about h:
     Since we would only actually know g (as we can calculate how long it took to get to our current node), we don't actually know h or how much longer till the end. Thus, we take an educated guess in which we take the literal distance (a straight line from current node to end node) as an estimate. Note! This estimate will always be an underestimate since this path would be the quickest (im)possible path to take. The function h must be an underestimate--otherwise the final answer may be wrong.
 
 The following algorithm is the basis of A-Star: at a node, all other nodes connected to it are assigned a cost value f based on how long it took to get there (g) and how much longer till end (h). Then the connected node with the lowest cost is taken, and the process repeats for this new node.
 
 How the canvas is set up:
+
 It will be less like a graph with nodes and edge weights and more like a grid where each grid space is free unless there is an obstacle occupying it.
 
 ---
@@ -35,4 +36,13 @@ It will be less like a graph with nodes and edge weights and more like a grid wh
 
 ---
 
-In the above example, each open space is an (o), start is (S), end is (E), and obstacle is (0). The algorithm will calculate its cost based on how many open spaces it took to reach e. This would be the typical set-up to find the shortest path in a pixel grid space.
+    In the above example, each open space is an (o), start is (S), end is (E), and obstacle is (0). The algorithm will calculate its cost based on how many open spaces it took to reach e. This would be the typical set-up to find the shortest path in a pixel grid space.
+
+Open and Closed Set:
+
+There is a notion of two sets used in this algorithm.
+The closed set--which stores all nodes that have been evaluated and do not need to be revisited.
+
+The open set--stores all nodes that need to be evaluated.
+
+The algorithm finishes either when the open set is empty--i.e. nothing is left to be evaluated--or when the destination is reached beforehand.
