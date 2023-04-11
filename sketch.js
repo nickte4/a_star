@@ -1,4 +1,16 @@
 /* File for all p5.js graphics on screen */
+// size of grid
+const cols = 20;
+const rows = 20;
+var grid = new Array(cols);
+
+var openSet = [];
+var closedSet = [];
+var start; // starting node
+var end; // ending node i.e. destination
+var w, h;
+var path = [];
+
 function removeFromArray(arr, elem) {
   for (var i = arr.length - 1; i >= 0; i--) {
     if (arr[i] == elem) {
@@ -7,39 +19,35 @@ function removeFromArray(arr, elem) {
   }
 }
 
-const cols = 5;
-const rows = 5;
-var grid = new Array(cols);
-
-var openSet = [];
-var closedSet = [];
-var start; // starting node
-var end; // ending node i.e. destination
-var w, h;
+function heuristic(a, b) {
+  // return dist(a.i, a.j, b.i, b.j);
+  return abs(a.i - b.i) + abs(a.j - b.j);
+}
 
 // Spot is the grid space
 function Spot(i, j) {
-  this.x = i;
-  this.y = j;
+  this.i = i;
+  this.j = j;
   this.f = 0;
   this.g = 0;
   this.h = 0;
   this.neighbors = [];
+  this.previous = undefined;
 
   this.show = function (spotColor) {
     fill(spotColor);
     noStroke();
-    rect(this.x * w, this.y * h, w - 1, h - 1);
+    rect(this.i * w, this.j * h, w - 1, h - 1);
   };
 
   this.addNeighbors = function (grid) {
-    let i = this.i;
-    let j = this.j;
+    const i = this.i;
+    const j = this.j;
     // all neighbors of pixel on each side
-    this.neighbors.push(grid[i + 1][j]);
-    this.neighbors.push(grid[i - 1][j]);
-    this.neighbors.push(grid[i][j + 1]);
-    this.neighbors.push(grid[i][j - 1]);
+    if (i < cols - 1) this.neighbors.push(grid[i + 1][j]);
+    if (i < 0) this.neighbors.push(grid[i - 1][j]);
+    if (j < rows - 1) this.neighbors.push(grid[i][j + 1]);
+    if (j < 0) this.neighbors.push(grid[i][j - 1]);
   };
 }
 
@@ -59,6 +67,13 @@ function setup() {
   for (var colIdx = 0; colIdx < cols; colIdx++) {
     for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
       grid[colIdx][rowIdx] = new Spot(colIdx, rowIdx);
+    }
+  }
+
+  // add neighbors to each pixel in grid
+  for (var colIdx = 0; colIdx < cols; colIdx++) {
+    for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
+      grid[colIdx][rowIdx].addNeighbors(grid);
     }
   }
 
@@ -88,6 +103,7 @@ function draw() {
     var current = openSet[winner];
 
     if (current === end) {
+      noLoop();
       console.log("DONE!");
     }
 
@@ -95,6 +111,27 @@ function draw() {
     removeFromArray(openSet, current);
     // add current to closed set
     closedSet.push(current);
+
+    var neighbors = current.neighbors;
+    for (var i = 0; i < neighbors.length; i++) {
+      var neighbor = neighbors[i];
+      if (!closedSet.includes(neighbor)) {
+        var tempG = current.g + 1;
+        if (openSet.includes(neighbor)) {
+          // node already checked before, see if its g
+          // is worse than current path
+          if (tempG < neighbor.g) neighbor.g = tempG;
+        } else {
+          // new node discovered
+          neighbor.g = tempG;
+          openSet.push(neighbor);
+        }
+
+        neighbor.h = heuristic(neighbor, end);
+        neighbor.f = neighbor.g + neighbor.h;
+        neighbor.previous = current;
+      }
+    }
   } else {
     // no solution
   }
@@ -104,15 +141,31 @@ function draw() {
   // debug: draw dots at each grid pixel
   for (var colIdx = 0; colIdx < cols; colIdx++) {
     for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
+      // color white
       grid[colIdx][rowIdx].show(color(255));
     }
   }
 
   for (var i = 0; i < closedSet.length; i++) {
+    // color red
     closedSet[i].show(color(255, 0, 0));
   }
 
   for (var i = 0; i < openSet.length; i++) {
+    // color green
     openSet[i].show(color(0, 255, 0));
+  }
+
+  // find current shortest path
+  path = [];
+  var temp = current;
+  while (temp) {
+    path.push(temp);
+    temp = temp.previous;
+  }
+
+  for (var i = 0; i < path.length; i++) {
+    // color blue
+    path[i].show(color(0, 0, 255));
   }
 }
