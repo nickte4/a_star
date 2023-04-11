@@ -38,7 +38,7 @@ function setup() {
 
   // place a Spot in each pixel of grid
   for (var colIdx = 0; colIdx < cols; colIdx++) {
-    for (var rowIdx = 0; rowIdx < rowIdx; rowIdx++) {
+    for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
       grid[colIdx][rowIdx] = new Spot(colIdx, rowIdx);
     }
   }
