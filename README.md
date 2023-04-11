@@ -46,3 +46,9 @@ The closed set--which stores all nodes that have been evaluated and do not need 
 The open set--stores all nodes that need to be evaluated.
 
 The algorithm finishes either when the open set is empty--i.e. nothing is left to be evaluated--or when the destination is reached beforehand.
+
+## Current Ineffiencies
+
+Currently searches through the open set using a linear search time algorithm (line 116). Could be re-implemented with a min heap to access in faster time.
+
+The code is not well organized. All code is in sketch.js.

@@ -1,7 +1,7 @@
 /* File for all p5.js graphics on screen */
 // size of grid
-const cols = 25;
-const rows = 25;
+const cols = 50;
+const rows = 50;
 var grid = new Array(cols);
 
 var openSet = [];
@@ -10,7 +10,6 @@ var start; // starting node
 var end; // ending node i.e. destination
 var w, h;
 var path = [];
-var noSolution = false;
 
 function removeFromArray(arr, elem) {
   for (var i = arr.length - 1; i >= 0; i--) {
@@ -21,8 +20,8 @@ function removeFromArray(arr, elem) {
 }
 
 function heuristic(a, b) {
-  // return dist(a.i, a.j, b.i, b.j);
-  return abs(a.i - b.i) + abs(a.j - b.j);
+  return dist(a.i, a.j, b.i, b.j); // euclidean distance
+  // return abs(a.i - b.i) + abs(a.j - b.j); // manhattan distance
 }
 
 // Spot is the grid space
@@ -56,6 +55,11 @@ function Spot(i, j) {
     if (i > 0) this.neighbors.push(grid[i - 1][j]);
     if (j < rows - 1) this.neighbors.push(grid[i][j + 1]);
     if (j > 0) this.neighbors.push(grid[i][j - 1]);
+    // all neighbors of pixel on its corners
+    if (i > 0 && j > 0) this.neighbors.push(grid[i - 1][j - 1]);
+    if (i < cols - 1 && j > 0) this.neighbors.push(grid[i + 1][j - 1]);
+    if (i > 0 && j < rows - 1) this.neighbors.push(grid[i - 1][j + 1]);
+    if (i < cols - 1 && j < rows - 1) this.neighbors.push(grid[i + 1][j + 1]);
   };
 }
 
@@ -108,6 +112,7 @@ function draw() {
   if (openSet.length > 0) {
     // keep going
     var winner = 0; // idx of best node to take
+    // linear search time algo --> could become better with min heap
     for (var i = 0; i < openSet.length; i++) {
       if (openSet[i].f < openSet[winner].f) {
         winner = i;
@@ -130,27 +135,36 @@ function draw() {
     var neighbors = current.neighbors;
     for (var i = 0; i < neighbors.length; i++) {
       var neighbor = neighbors[i];
+
       if (!closedSet.includes(neighbor) && !neighbor.wall) {
         var tempG = current.g + 1;
+
+        var newPath = false;
         if (openSet.includes(neighbor)) {
-          // node already checked before, see if its g
-          // is worse than current path
-          if (tempG < neighbor.g) neighbor.g = tempG;
+          // node already checked before, see if its g is worse than current path
+          if (tempG < neighbor.g) {
+            neighbor.g = tempG;
+            newPath = true;
+          }
         } else {
           // new node discovered
           neighbor.g = tempG;
+          newPath = true;
           openSet.push(neighbor);
         }
 
-        neighbor.h = heuristic(neighbor, end);
-        neighbor.f = neighbor.g + neighbor.h;
-        neighbor.previous = current;
+        if (newPath) {
+          neighbor.h = heuristic(neighbor, end);
+          neighbor.f = neighbor.g + neighbor.h;
+          neighbor.previous = current;
+        }
       }
     }
   } else {
     // no solution
     console.log("no solution");
-    noSolution = true;
+    noLoop();
+    return;
   }
   // background set to black (0)
   background(0);
@@ -174,14 +188,11 @@ function draw() {
   }
 
   // find current shortest path
-  if (!noSolution) {
-    path = [];
-    var temp = current;
+  path = [];
+  var temp = current;
+  while (temp) {
     path.push(temp);
-    while (temp.previous) {
-      path.push(temp.previous);
-      temp = temp.previous;
-    }
+    temp = temp.previous;
   }
 
   for (var i = 0; i < path.length; i++) {
