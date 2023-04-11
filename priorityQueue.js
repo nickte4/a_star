@@ -4,9 +4,10 @@
  */
 class pQueue {
   constructor(size) {
-    var heap = Array(size).fill(0);
+    this.heap = new Array(size);
     this.size = -1;
   }
+  // PRIVATE METHODS
   // return index of parent of a given node (using its index)
   #parent(i) {
     return parseInt((i - 1) / 2);
@@ -23,17 +24,17 @@ class pQueue {
   }
 
   #swap(i, j) {
-    var temp = heap[i];
-    heap[i] = heap[j];
-    heap[j] = temp;
+    var temp = this.heap[i];
+    this.heap[i] = this.heap[j];
+    this.heap[j] = temp;
   }
 
   // shifts node up to maintain heap property
   #shiftUp(i) {
     // swap nodes while the parent is greater than the curr node
-    while (i > 0 && heap[this.#parent(i)].f > H[i].f) {
+    while (i > 0 && this.heap[this.#parent(i)].f > this.heap[i].f) {
       // swap parent and curr node
-      this.#swap(parent(i), i);
+      this.#swap(this.#parent(i), i);
       // update i to parent of i
       i = this.#parent(i);
     }
@@ -46,7 +47,10 @@ class pQueue {
     var leftChildIdx = this.#leftChild(i);
 
     // if the left child is lesser than curr, swap indices
-    if (leftChildIdx <= this.size && heap[leftChildIdx].f < heap[minIndex].f) {
+    if (
+      leftChildIdx <= this.size &&
+      this.heap[leftChildIdx].f < this.heap[minIndex].f
+    ) {
       minIndex = leftChildIdx;
     }
 
@@ -54,7 +58,7 @@ class pQueue {
     var rightChildIdx = this.#rightChild(i);
     if (
       rightChildIdx <= this.size &&
-      heap[rightChildIdx].f < heap[minIndex].f
+      this.heap[rightChildIdx].f < this.heap[minIndex].f
     ) {
       minIndex = rightChildIdx;
     }
@@ -66,17 +70,22 @@ class pQueue {
     }
   }
 
+  // PUBLIC METHODS
   insert(elem) {
     this.size = this.size + 1;
-    heap[this.size] = elem;
+    this.heap[this.size] = elem;
     // shift up to maintain heap property
     this.#shiftUp(this.size);
   }
 
+  length() {
+    return this.size;
+  }
+
   extractMin() {
-    var result = heap[0];
+    var result = this.heap[0];
     // replace value at root with last leaf
-    heap[0] = heap[this.size];
+    this.heap[0] = this.heap[this.size];
     this.size = this.size - 1;
 
     // shift down replaced root to maintain heap property
@@ -85,21 +94,32 @@ class pQueue {
   }
 
   getMin() {
-    return heap[0];
+    return this.heap[0];
   }
 
   remove(elem) {
     var elemIdx = 0;
     for (var i = 0; i < this.size; i++) {
-      if (heap[i] == elem) {
+      if (this.heap[i] == elem) {
         elemIdx = i;
         break;
       }
     }
-    heap[elemIdx] = this.getMin() + 1;
+    this.heap[elemIdx] = this.getMin() + 1;
 
     // shift up node to root of heap
     this.#shiftUp(elemIdx);
     this.extractMin();
+  }
+
+  contains(elem) {
+    for (var i = 0; i <= this.size; i++) {
+      if (this.heap[i] == elem) return true;
+    }
+    return false;
+  }
+
+  elem(i) {
+    return this.heap[i];
   }
 }

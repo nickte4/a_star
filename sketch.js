@@ -1,11 +1,12 @@
 /* File for all p5.js graphics on screen */
 // size of grid
-const cols = 50;
-const rows = 50;
+const cols = 60;
+const rows = 60;
 var grid = new Array(cols);
+const gridSize = cols * rows;
 
-var openSet = [];
-var closedSet = [];
+var openSet = new pQueue(gridSize);
+var closedSet = new pQueue(gridSize);
 var start; // starting node
 var end; // ending node i.e. destination
 var w, h;
@@ -28,17 +29,15 @@ function findAndDrawCurrPath(current, path) {
 
 // draws potential grid spaces green
 function drawGreenSpaces(openSet) {
-  for (var i = 0; i < openSet.length; i++) {
-    // color green
-    openSet[i].show(color(0, 255, 0));
+  for (var i = 0; i <= openSet.length(); i++) {
+    openSet.elem(i).show(color(0, 255, 0));
   }
 }
 
 // draws discarded grid spaces red
 function drawRedSpaces(closedSet) {
-  for (var i = 0; i < closedSet.length; i++) {
-    // color red
-    closedSet[i].show(color(255, 0, 0));
+  for (var i = 0; i <= closedSet.length(); i++) {
+    closedSet.elem(i).show(color(255, 0, 0));
   }
 }
 
@@ -61,28 +60,21 @@ function checkIfFinished(currSpot, endSpot) {
 }
 
 // gets the best node from the open set
-// USE PRIORITY QUEUE HERE
 function findBestNode(openSet) {
-  // linear search time algo --> could become better with min heap
-  let winner = 0;
-  for (var i = 0; i < openSet.length; i++) {
-    if (openSet[i].f < openSet[winner].f) {
-      winner = i;
-    }
-  }
-  return winner;
+  // O(1) access time, priority queue using min heap
+  return openSet.getMin();
 }
 
 // evaluates the cost of neighbors around current spot
-function checkNeighbors(neighbors, current, openSet) {
+function checkNeighbors(neighbors, current, openSet, end) {
   for (var i = 0; i < neighbors.length; i++) {
     var neighbor = neighbors[i];
 
-    if (!closedSet.includes(neighbor) && !neighbor.wall) {
+    if (!closedSet.contains(neighbor) && !neighbor.wall) {
       var tempG = current.g + 1;
 
       var newPath = false;
-      if (openSet.includes(neighbor)) {
+      if (openSet.contains(neighbor)) {
         // node already checked before, see if its g is worse than current path
         if (tempG < neighbor.g) {
           neighbor.g = tempG;
@@ -92,13 +84,13 @@ function checkNeighbors(neighbors, current, openSet) {
         // new node discovered
         neighbor.g = tempG;
         newPath = true;
-        openSet.push(neighbor);
       }
 
       if (newPath) {
         neighbor.h = heuristic(neighbor, end);
         neighbor.f = neighbor.g + neighbor.h;
         neighbor.previous = current;
+        openSet.insert(neighbor);
       }
     }
   }
@@ -147,16 +139,15 @@ function setup() {
   // the start is the top left pixel
   start = grid[0][0];
   // the  end is the bottom right pixel
-  end = grid[cols - 1][rows - 1];
+  // end = grid[cols - 1][rows - 1];
+  // RANDOM SETTING
+  var randCol = Math.floor(random(0, cols - 1));
+  var randRow = Math.floor(random(0, rows - 1));
+  end = grid[randCol][randRow];
   start.wall = false; // make sure start is not wall
   end.wall = false; // make sure end is not a wall
 
-  // RANDOM SETTING
-  // var randCol = Math.floor(random(0, cols - 1));
-  // var randRow = Math.floor(random(0, rows - 1));
-  // end = grid[randCol][randRow];
-
-  openSet.push(start);
+  openSet.insert(start);
 
   console.log(grid);
 }
@@ -164,21 +155,19 @@ function setup() {
 // draw is the animation loop to continuously draw graphics to screen
 function draw() {
   // normally, this would be a while loop, but draw() itself is a loop
-  if (openSet.length > 0) {
+  if (openSet.length() > -1) {
     // keep going
 
     // get index of best node
-    var winner = findBestNode(openSet);
-    // best node to take
-    var current = openSet[winner];
+    var current = findBestNode(openSet);
     // check if we are at destination
     checkIfFinished(current, end);
 
     // must not be done yet, move best node into closed set
-    removeFromArray(openSet, current);
-    closedSet.push(current);
+    openSet.remove(current);
+    closedSet.insert(current);
 
-    checkNeighbors(current.neighbors, current, openSet);
+    checkNeighbors(current.neighbors, current, openSet, end);
   } else {
     // no solution
     console.log("no solution");
