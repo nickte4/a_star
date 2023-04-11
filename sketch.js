@@ -1,7 +1,7 @@
 /* File for all p5.js graphics on screen */
 // size of grid
-const cols = 20;
-const rows = 20;
+const cols = 25;
+const rows = 25;
 var grid = new Array(cols);
 
 var openSet = [];
@@ -10,6 +10,7 @@ var start; // starting node
 var end; // ending node i.e. destination
 var w, h;
 var path = [];
+var noSolution = false;
 
 function removeFromArray(arr, elem) {
   for (var i = arr.length - 1; i >= 0; i--) {
@@ -26,28 +27,35 @@ function heuristic(a, b) {
 
 // Spot is the grid space
 function Spot(i, j) {
-  this.i = i;
-  this.j = j;
-  this.f = 0;
-  this.g = 0;
-  this.h = 0;
-  this.neighbors = [];
-  this.previous = undefined;
+  this.i = i; // col pos
+  this.j = j; // row pos
+  this.f = 0; // function f (total cost)
+  this.g = 0; // function g (actual cost)
+  this.h = 0; // function h (remaining cost)
+  this.neighbors = []; // all neighbors of spot
+  this.previous = undefined; // pointer to where it came from
+  this.wall = false; // marks if it is a wall
+
+  // decimal == chance to be a wall (e.g. 0.1 = 10% chance)
+  if (random(1) < 0.3) {
+    this.wall = true;
+  }
 
   this.show = function (spotColor) {
     fill(spotColor);
+    if (this.wall) fill(0);
     noStroke();
     rect(this.i * w, this.j * h, w - 1, h - 1);
   };
 
   this.addNeighbors = function (grid) {
-    const i = this.i;
-    const j = this.j;
+    var i = this.i;
+    var j = this.j;
     // all neighbors of pixel on each side
     if (i < cols - 1) this.neighbors.push(grid[i + 1][j]);
-    if (i < 0) this.neighbors.push(grid[i - 1][j]);
+    if (i > 0) this.neighbors.push(grid[i - 1][j]);
     if (j < rows - 1) this.neighbors.push(grid[i][j + 1]);
-    if (j < 0) this.neighbors.push(grid[i][j - 1]);
+    if (j > 0) this.neighbors.push(grid[i][j - 1]);
   };
 }
 
@@ -79,8 +87,15 @@ function setup() {
 
   // the start is the top left pixel
   start = grid[0][0];
-  // the  end is the bottom right pixel (could be randomized)
+  // the  end is the bottom right pixel
   end = grid[cols - 1][rows - 1];
+  start.wall = false; // make sure start is not wall
+  end.wall = false; // make sure end is not a wall
+
+  // RANDOM SETTING
+  // var randCol = Math.floor(random(0, cols - 1));
+  // var randRow = Math.floor(random(0, rows - 1));
+  // end = grid[randCol][randRow];
 
   openSet.push(start);
 
@@ -115,7 +130,7 @@ function draw() {
     var neighbors = current.neighbors;
     for (var i = 0; i < neighbors.length; i++) {
       var neighbor = neighbors[i];
-      if (!closedSet.includes(neighbor)) {
+      if (!closedSet.includes(neighbor) && !neighbor.wall) {
         var tempG = current.g + 1;
         if (openSet.includes(neighbor)) {
           // node already checked before, see if its g
@@ -134,6 +149,8 @@ function draw() {
     }
   } else {
     // no solution
+    console.log("no solution");
+    noSolution = true;
   }
   // background set to black (0)
   background(0);
@@ -157,15 +174,21 @@ function draw() {
   }
 
   // find current shortest path
-  path = [];
-  var temp = current;
-  while (temp) {
+  if (!noSolution) {
+    path = [];
+    var temp = current;
     path.push(temp);
-    temp = temp.previous;
+    while (temp.previous) {
+      path.push(temp.previous);
+      temp = temp.previous;
+    }
   }
 
   for (var i = 0; i < path.length; i++) {
     // color blue
     path[i].show(color(0, 0, 255));
   }
+
+  // show where the end grid space is
+  end.show(color("yellow"));
 }
