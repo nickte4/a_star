@@ -47,8 +47,25 @@ The open set--stores all nodes that need to be evaluated.
 
 The algorithm finishes either when the open set is empty--i.e. nothing is left to be evaluated--or when the destination is reached beforehand.
 
+## Using a priority queue via a min-heap on the sets
+
+So this was probably the most challenging part of the algorithm--which was not even a part of the actual algorithm funnily enough. Essentially, one of the initial pitfalls of the previous iteration (commit id: 0c3c64c) was that the best node to use in the open set was found via a O(n) linear search algorithm (just using a for loop basically).
+
+An optimization that the CodingTrain suggested was to use a priority queue that placed the node with the least f at the top of the queue. To implement this, I used a min-heap. I used [GeeksForGeeks](https://www.geeksforgeeks.org/priority-queue-using-binary-heap/) as a guide for this.
+
+One of the main challenges that came with this was that I had to figure out how to create classes in JS ES6 and use them in other files. Another problem I kept running into was how to iterate over the priority queue/min-heap. I tried an iterator which did not want to work whatsoever, so I switched gears and just iterated over the heap itself with a for loop. This is where one of the ineffiencies lie for this data structure.
+
 ## Current Ineffiencies
 
-Currently searches through the open set using a linear search time algorithm (line 116). Could be re-implemented with a min heap to access in faster time.
+1. Code may be confusing in its organization. Could use better sectioning.
 
-The code is not well organized. All code is in sketch.js.
+2. Sets are implemented using a priority queue via a min-heap. This means the following (worst-case) time complexities:
+
+```
+Insertion: O(log(n))
+Deletion: O(log(n))
+GetMin: O(1)
+Search: O(N)
+```
+
+    This makes the sets quite fast to insert and delete an element, extraordinarily fast to get the min. element, but unfortunately slow to search for an element.
