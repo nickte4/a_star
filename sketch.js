@@ -1,7 +1,7 @@
 /* File for all p5.js graphics on screen */
 // size of grid
-const cols = 60;
-const rows = 60;
+const cols = 100;
+const rows = 100;
 var grid = new Array(cols);
 const gridSize = cols * rows;
 
@@ -112,7 +112,7 @@ function heuristic(a, b) {
 
 function setup() {
   // sets up size of canvas window
-  createCanvas(400, 400);
+  createCanvas(600, 600);
 
   w = width / cols;
   h = height / rows;
