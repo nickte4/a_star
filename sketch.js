@@ -11,6 +11,100 @@ var end; // ending node i.e. destination
 var w, h;
 var path = [];
 
+// finds and draws current path as blue
+function findAndDrawCurrPath(current, path) {
+  path = [];
+  var temp = current;
+  while (temp) {
+    path.push(temp);
+    temp = temp.previous;
+  }
+
+  for (var i = 0; i < path.length; i++) {
+    // color blue
+    path[i].show(color(0, 0, 255));
+  }
+}
+
+// draws potential grid spaces green
+function drawGreenSpaces(openSet) {
+  for (var i = 0; i < openSet.length; i++) {
+    // color green
+    openSet[i].show(color(0, 255, 0));
+  }
+}
+
+// draws discarded grid spaces red
+function drawRedSpaces(closedSet) {
+  for (var i = 0; i < closedSet.length; i++) {
+    // color red
+    closedSet[i].show(color(255, 0, 0));
+  }
+}
+
+// draws grid spaces as white
+function drawGridSpaces(grid) {
+  for (var colIdx = 0; colIdx < cols; colIdx++) {
+    for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
+      // color white
+      grid[colIdx][rowIdx].show(color(255));
+    }
+  }
+}
+
+// checks if current node is at the end
+function checkIfFinished(currSpot, endSpot) {
+  if (currSpot == endSpot) {
+    noLoop();
+    console.log("DONE!");
+  }
+}
+
+// gets the best node from the open set
+// USE PRIORITY QUEUE HERE
+function findBestNode(openSet) {
+  // linear search time algo --> could become better with min heap
+  let winner = 0;
+  for (var i = 0; i < openSet.length; i++) {
+    if (openSet[i].f < openSet[winner].f) {
+      winner = i;
+    }
+  }
+  return winner;
+}
+
+// evaluates the cost of neighbors around current spot
+function checkNeighbors(neighbors, current, openSet) {
+  for (var i = 0; i < neighbors.length; i++) {
+    var neighbor = neighbors[i];
+
+    if (!closedSet.includes(neighbor) && !neighbor.wall) {
+      var tempG = current.g + 1;
+
+      var newPath = false;
+      if (openSet.includes(neighbor)) {
+        // node already checked before, see if its g is worse than current path
+        if (tempG < neighbor.g) {
+          neighbor.g = tempG;
+          newPath = true;
+        }
+      } else {
+        // new node discovered
+        neighbor.g = tempG;
+        newPath = true;
+        openSet.push(neighbor);
+      }
+
+      if (newPath) {
+        neighbor.h = heuristic(neighbor, end);
+        neighbor.f = neighbor.g + neighbor.h;
+        neighbor.previous = current;
+      }
+    }
+  }
+}
+
+// remove element from array
 function removeFromArray(arr, elem) {
   for (var i = arr.length - 1; i >= 0; i--) {
     if (arr[i] == elem) {
@@ -22,45 +116,6 @@ function removeFromArray(arr, elem) {
 function heuristic(a, b) {
   return dist(a.i, a.j, b.i, b.j); // euclidean distance
   // return abs(a.i - b.i) + abs(a.j - b.j); // manhattan distance
-}
-
-// Spot is the grid space
-function Spot(i, j) {
-  this.i = i; // col pos
-  this.j = j; // row pos
-  this.f = 0; // function f (total cost)
-  this.g = 0; // function g (actual cost)
-  this.h = 0; // function h (remaining cost)
-  this.neighbors = []; // all neighbors of spot
-  this.previous = undefined; // pointer to where it came from
-  this.wall = false; // marks if it is a wall
-
-  // decimal == chance to be a wall (e.g. 0.1 = 10% chance)
-  if (random(1) < 0.3) {
-    this.wall = true;
-  }
-
-  this.show = function (spotColor) {
-    fill(spotColor);
-    if (this.wall) fill(0);
-    noStroke();
-    rect(this.i * w, this.j * h, w - 1, h - 1);
-  };
-
-  this.addNeighbors = function (grid) {
-    var i = this.i;
-    var j = this.j;
-    // all neighbors of pixel on each side
-    if (i < cols - 1) this.neighbors.push(grid[i + 1][j]);
-    if (i > 0) this.neighbors.push(grid[i - 1][j]);
-    if (j < rows - 1) this.neighbors.push(grid[i][j + 1]);
-    if (j > 0) this.neighbors.push(grid[i][j - 1]);
-    // all neighbors of pixel on its corners
-    if (i > 0 && j > 0) this.neighbors.push(grid[i - 1][j - 1]);
-    if (i < cols - 1 && j > 0) this.neighbors.push(grid[i + 1][j - 1]);
-    if (i > 0 && j < rows - 1) this.neighbors.push(grid[i - 1][j + 1]);
-    if (i < cols - 1 && j < rows - 1) this.neighbors.push(grid[i + 1][j + 1]);
-  };
 }
 
 function setup() {
@@ -111,55 +166,19 @@ function draw() {
   // normally, this would be a while loop, but draw() itself is a loop
   if (openSet.length > 0) {
     // keep going
-    var winner = 0; // idx of best node to take
-    // linear search time algo --> could become better with min heap
-    for (var i = 0; i < openSet.length; i++) {
-      if (openSet[i].f < openSet[winner].f) {
-        winner = i;
-      }
-    }
 
+    // get index of best node
+    var winner = findBestNode(openSet);
     // best node to take
     var current = openSet[winner];
+    // check if we are at destination
+    checkIfFinished(current, end);
 
-    if (current === end) {
-      noLoop();
-      console.log("DONE!");
-    }
-
-    // remove current from open set
+    // must not be done yet, move best node into closed set
     removeFromArray(openSet, current);
-    // add current to closed set
     closedSet.push(current);
 
-    var neighbors = current.neighbors;
-    for (var i = 0; i < neighbors.length; i++) {
-      var neighbor = neighbors[i];
-
-      if (!closedSet.includes(neighbor) && !neighbor.wall) {
-        var tempG = current.g + 1;
-
-        var newPath = false;
-        if (openSet.includes(neighbor)) {
-          // node already checked before, see if its g is worse than current path
-          if (tempG < neighbor.g) {
-            neighbor.g = tempG;
-            newPath = true;
-          }
-        } else {
-          // new node discovered
-          neighbor.g = tempG;
-          newPath = true;
-          openSet.push(neighbor);
-        }
-
-        if (newPath) {
-          neighbor.h = heuristic(neighbor, end);
-          neighbor.f = neighbor.g + neighbor.h;
-          neighbor.previous = current;
-        }
-      }
-    }
+    checkNeighbors(current.neighbors, current, openSet);
   } else {
     // no solution
     console.log("no solution");
@@ -169,36 +188,17 @@ function draw() {
   // background set to black (0)
   background(0);
 
-  // debug: draw dots at each grid pixel
-  for (var colIdx = 0; colIdx < cols; colIdx++) {
-    for (var rowIdx = 0; rowIdx < rows; rowIdx++) {
-      // color white
-      grid[colIdx][rowIdx].show(color(255));
-    }
-  }
+  // draw white grid spaces
+  drawGridSpaces(grid);
 
-  for (var i = 0; i < closedSet.length; i++) {
-    // color red
-    closedSet[i].show(color(255, 0, 0));
-  }
+  // draw discarded grid spaces red
+  drawRedSpaces(closedSet);
 
-  for (var i = 0; i < openSet.length; i++) {
-    // color green
-    openSet[i].show(color(0, 255, 0));
-  }
+  // draw potential grid spaces green
+  drawGreenSpaces(openSet);
 
-  // find current shortest path
-  path = [];
-  var temp = current;
-  while (temp) {
-    path.push(temp);
-    temp = temp.previous;
-  }
-
-  for (var i = 0; i < path.length; i++) {
-    // color blue
-    path[i].show(color(0, 0, 255));
-  }
+  // find and draw current shortest path blue
+  findAndDrawCurrPath(current, path);
 
   // show where the end grid space is
   end.show(color("yellow"));
