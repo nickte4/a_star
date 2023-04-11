@@ -18,8 +18,8 @@ In Djikstra's algorithm, (explained in very layman's terms) there (usually) are 
 
 In the A-Star algorithm, there is a function f(n) = g(n) + h(n). g is the accumulating 'actual' cost from beginning to end. This is the Djikstra's part of the algorithm. h is the calculation of how long will it take to get to the end from the current point. These two functions combined into f will tell us how long it takes to get to each node.
 
-    A note about h:
-    Since we would only actually know g (as we can calculate how long it took to get to our current node), we don't actually know h or how much longer till the end. Thus, we take an educated guess in which we take the literal distance (a straight line from current node to end node) as an estimate. Note! This estimate will always be an underestimate since this path would be the quickest (im)possible path to take. The function h must be an underestimate--otherwise the final answer may be wrong.
+A note about h:
+Since we would only actually know g (as we can calculate how long it took to get to our current node), we don't actually know h or how much longer till the end. Thus, we take an educated guess in which we take the literal distance (a straight line from current node to end node) as an estimate. Note! This estimate will always be an underestimate since this path would be the quickest (im)possible path to take. The function h must be an underestimate--otherwise the final answer may be wrong.
 
 The following algorithm is the basis of A-Star: at a node, all other nodes connected to it are assigned a cost value f based on how long it took to get there (g) and how much longer till end (h). Then the connected node with the lowest cost is taken, and the process repeats for this new node.
 
@@ -36,7 +36,7 @@ It will be less like a graph with nodes and edge weights and more like a grid wh
 
 ```
 
-    In the above example, each open space is an (o), start is (S), end is (E), and obstacle is (0). The algorithm will calculate its cost based on how many open spaces it took to reach e. This would be the typical set-up to find the shortest path in a pixel grid space.
+In the above example, each open space is an (o), start is (S), end is (E), and obstacle is (0). The algorithm will calculate its cost based on how many open spaces it took to reach e. This would be the typical set-up to find the shortest path in a pixel grid space.
 
 ## Open and Closed Set:
 
@@ -68,4 +68,4 @@ GetMin: O(1)
 Search: O(N)
 ```
 
-    This makes the sets quite fast to insert and delete an element, extraordinarily fast to get the min. element, but unfortunately slow to search for an element.
+This makes the sets quite fast to insert and delete an element, extraordinarily fast to get the min. element, but unfortunately slow to search for an element.
