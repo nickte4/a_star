@@ -1,16 +1,16 @@
 # a_star
 
-Abstract:
+## Abstract:
 
 A JavaScript project implementing the A-Star pathfinding algorithm using TheCodingTrain's tutorial video.
 
-Description:
+## Description:
 
 The following project was created using TheCodingTrain's Challenge 51 Video about A-Star Pathfinding. This algorithm is a slight alteration on Djikstra's algorithm for finding the shortest path to a destination. This algorithm is traditionally seen on graphs with weighted edges (these weights signifying the cost of reaching from one node to another). This algorithm can be seen in a variety of forms--most obviously in video games (think League of Legends point-and-click pathfinding).
 
 This project was created in JavaScript using the p5 graphics library.
 
-A-Star Pathfinding:
+## A-Star Pathfinding:
 
 So a little more about A-Star Pathfinding. As mentioned before, it's an alteration of Djikstra's algorithm which essentially centers around answering the question of "What is the shortest path to reach node B from node A?"
 
@@ -23,22 +23,22 @@ In the A-Star algorithm, there is a function f(n) = g(n) + h(n). g is the accumu
 
 The following algorithm is the basis of A-Star: at a node, all other nodes connected to it are assigned a cost value f based on how long it took to get there (g) and how much longer till end (h). Then the connected node with the lowest cost is taken, and the process repeats for this new node.
 
-How the canvas is set up:
+## How the canvas is set up:
 
 It will be less like a graph with nodes and edge weights and more like a grid where each grid space is free unless there is an obstacle occupying it.
 
----
+```
 
 | S o o o o o |
 | o o 0 o o o |
 | o o o o 0 o |
 | 0 o o o o E |
 
----
+```
 
     In the above example, each open space is an (o), start is (S), end is (E), and obstacle is (0). The algorithm will calculate its cost based on how many open spaces it took to reach e. This would be the typical set-up to find the shortest path in a pixel grid space.
 
-Open and Closed Set:
+## Open and Closed Set:
 
 There is a notion of two sets used in this algorithm.
 The closed set--which stores all nodes that have been evaluated and do not need to be revisited.
