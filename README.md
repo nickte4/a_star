@@ -9,6 +9,7 @@ A JavaScript project implementing the A-Star pathfinding algorithm using TheCodi
 - HTML (minimal)
 - CSS (minimal)
 - JavaScript
+- p5.js
 
 ## **Scope**
 
